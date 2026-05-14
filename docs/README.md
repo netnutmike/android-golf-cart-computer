@@ -21,9 +21,9 @@ The Android Golf Cart Computer is a native Android application designed for The 
 The GCD operates as part of a three-component system:
 
 ```
-┌─────────────────┐     BLE      ┌─────────────────┐    LoRa Mesh    ┌─────────────────┐
+┌─────────────────┐     BLE      ┌─────────────────┐    LoRa Mesh   ┌─────────────────┐
 │   GCD (Android) │◄────────────►│  GCM (Meshtastic│◄──────────────►│  Other Mesh     │
-│   Display App   │              │  Radio)          │                │  Nodes          │
+│   Display App   │              │  Radio)         │                │  Nodes          │
 └────────┬────────┘              └─────────────────┘                └─────────────────┘
          │
          │ Bluetooth

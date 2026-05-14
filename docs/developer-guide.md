@@ -8,13 +8,13 @@ The application follows a **three-layer architecture** with strict dependency ru
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                      UI Layer                            │
+│                      UI Layer                           │
 │  Jetpack Compose screens observe state via StateFlow    │
 ├─────────────────────────────────────────────────────────┤
-│                    Domain Layer                          │
+│                    Domain Layer                         │
 │  Business logic, state coordination, data transforms    │
 ├─────────────────────────────────────────────────────────┤
-│                     Data Layer                           │
+│                     Data Layer                          │
 │  BLE services, persistence, platform APIs               │
 └─────────────────────────────────────────────────────────┘
 ```
