@@ -14,7 +14,7 @@ java = "17"
 composeBom = "2024.02.00"
 composeCompiler = "1.5.10"
 activityCompose = "1.8.2"
-lifecycleRuntime = "2.7.0"
+lifecycleRuntime = "2.10.0"
 navigationCompose = "2.7.7"
 
 # Dependency Injection
