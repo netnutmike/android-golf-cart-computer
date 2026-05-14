@@ -1,0 +1,15 @@
+{
+  "extends": [
+    "config:base",
+    "schedule:weekly"
+  ],
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true
+    }
+  ],
+  "gradle": {
+    "enabled": true
+  }
+}

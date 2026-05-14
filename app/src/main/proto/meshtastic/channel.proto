@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+package meshtastic;
+
+option java_package = "com.golfcart.gcd.data.proto";
+
+/**
+ * This message is specifically for modules to store per-channel configuration data.
+ */
+message ModuleSettings {
+  // Bits of precision for the location sent in position packets
+  uint32 position_precision = 1;
+
+  // Controls whether or not the phone/clients should mute the current channel
+  bool is_client_muted = 2;
+}
+
+/**
+ * This information can be encoded as a QRcode/url so that other users can configure
+ * their radio to join the same channel.
+ */
+message ChannelSettings {
+  // Deprecated in favor of LoraConfig.channel_num
+  uint32 channel_num = 1;
+
+  // A simple pre-shared key for now for crypto.
+  // Must be either 0 bytes (no crypto), 16 bytes (AES128), or 32 bytes (AES256).
+  bytes psk = 2;
+
+  // A SHORT name that will be packed into the URL. Less than 12 bytes.
+  string name = 3;
+
+  // Used to construct a globally unique channel ID
+  fixed32 id = 4;
+
+  // If true, messages on the mesh will be sent to the public internet by any gateway node
+  bool uplink_enabled = 5;
+
+  // If true, messages seen on the internet will be forwarded to the local mesh
+  bool downlink_enabled = 6;
+
+  // Per-channel module settings
+  ModuleSettings module_settings = 7;
+}
+
+/**
+ * A pair of a channel number, mode and the (sharable) settings for that channel.
+ */
+message Channel {
+  /**
+   * How this channel is being used (or not).
+   */
+  enum Role {
+    // This channel is not in use right now
+    DISABLED = 0;
+
+    // This channel is used to set the frequency for the radio
+    PRIMARY = 1;
+
+    // Secondary channels are only used for encryption/decryption/authentication purposes
+    SECONDARY = 2;
+  }
+
+  // The index of this channel in the channel table (from 0 to MAX_NUM_CHANNELS-1)
+  int32 index = 1;
+
+  // The new settings, or NULL to disable that channel
+  ChannelSettings settings = 2;
+
+  // The role of this channel
+  Role role = 3;
+}

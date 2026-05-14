@@ -1,0 +1,176 @@
+syntax = "proto3";
+
+package meshtastic;
+
+option java_package = "com.golfcart.gcd.data.proto";
+
+import "meshtastic/channel.proto";
+import "meshtastic/config.proto";
+import "meshtastic/module_config.proto";
+import "meshtastic/mesh.proto";
+
+/**
+ * Admin message - responsible for all settings/channel read/write operations.
+ * This message is used to do settings operations to both remote AND local nodes.
+ */
+message AdminMessage {
+  // Config type enum for get/set config requests
+  enum ConfigType {
+    DEVICE_CONFIG = 0;
+    POSITION_CONFIG = 1;
+    POWER_CONFIG = 2;
+    NETWORK_CONFIG = 3;
+    DISPLAY_CONFIG = 4;
+    LORA_CONFIG = 5;
+    BLUETOOTH_CONFIG = 6;
+    SECURITY_CONFIG = 7;
+    SESSIONKEY_CONFIG = 8;
+  }
+
+  // Module config type enum for get/set module config requests
+  enum ModuleConfigType {
+    MQTT_CONFIG = 0;
+    SERIAL_CONFIG = 1;
+    EXTNOTIF_CONFIG = 2;
+    STOREFORWARD_CONFIG = 3;
+    RANGETEST_CONFIG = 4;
+    TELEMETRY_CONFIG = 5;
+    CANNEDMSG_CONFIG = 6;
+    AUDIO_CONFIG = 7;
+    REMOTEHARDWARE_CONFIG = 8;
+    NEIGHBORINFO_CONFIG = 9;
+    AMBIENTLIGHTING_CONFIG = 10;
+    DETECTIONSENSOR_CONFIG = 11;
+    PAXCOUNTER_CONFIG = 12;
+  }
+
+  oneof payload_variant {
+    // --- Getters ---
+
+    // Send the specified channel in the response to this message
+    // NOTE: This field is sent with the channel index + 1
+    uint32 get_channel_request = 1;
+
+    // Response to get_channel_request
+    Channel get_channel_response = 2;
+
+    // Send the current owner data in the response to this message
+    bool get_owner_request = 3;
+
+    // Response to get_owner_request
+    User get_owner_response = 4;
+
+    // Ask for the following config data to be sent
+    ConfigType get_config_request = 5;
+
+    // Send the current Config in the response to this message
+    Config get_config_response = 6;
+
+    // Ask for the following module config data to be sent
+    ModuleConfigType get_module_config_request = 7;
+
+    // Send the current ModuleConfig in the response to this message
+    ModuleConfig get_module_config_response = 8;
+
+    // Get the Canned Message Module messages
+    bool get_canned_message_module_messages_request = 10;
+
+    // Response with canned messages
+    string get_canned_message_module_messages_response = 11;
+
+    // Request the node to send device metadata
+    bool get_device_metadata_request = 12;
+
+    // Device metadata response
+    DeviceMetadata get_device_metadata_response = 13;
+
+    // Get the Ringtone
+    bool get_ringtone_request = 14;
+
+    // Ringtone response
+    string get_ringtone_response = 15;
+
+    // Request the node to send its connection status
+    bool get_device_connection_status_request = 16;
+
+    // --- Setters ---
+
+    // Set the owner for this node
+    User set_owner = 32;
+
+    // Set channels (channel index is in the channel message itself)
+    Channel set_channel = 33;
+
+    // Set the current Config
+    Config set_config = 34;
+
+    // Set the current ModuleConfig
+    ModuleConfig set_module_config = 35;
+
+    // Set canned message module messages
+    string set_canned_message_module_messages = 36;
+
+    // Set the ringtone
+    string set_ringtone_message = 37;
+
+    // --- Commands ---
+
+    // Begins an ideally short shutdown/reboot sequence (in seconds)
+    int32 reboot_seconds = 95;
+
+    // Begins a shutdown (in seconds)
+    int32 shutdown_seconds = 96;
+
+    // Tell the node to factory reset
+    int32 factory_reset = 97;
+
+    // Tell the node to reset the nodedb
+    int32 nodedb_reset = 98;
+
+    // Set the fixed position for this node
+    Position set_fixed_position = 99;
+
+    // Remove the fixed position for this node
+    bool remove_fixed_position = 100;
+
+    // Begins a node software update via OTA
+    bool begin_edit_settings = 101;
+
+    // Commits changes from begin_edit_settings
+    bool commit_edit_settings = 102;
+
+    // Tell the node to reboot into OTA mode
+    int32 reboot_ota_seconds = 103;
+
+    // Exit firmware update mode
+    bool exit_simulator = 104;
+
+    // Set the ham mode parameters
+    HamParameters set_ham_mode = 105;
+
+    // Request node to send their nodedb
+    bool get_node_remote_hardware_pins_request = 106;
+  }
+
+  // Session key for admin operations
+  bytes session_passkey = 200;
+}
+
+/**
+ * Parameters for setting up Meshtastic for amateur radio usage
+ */
+message HamParameters {
+  // Amateur radio call sign, eg. KD2ABC
+  string call_sign = 1;
+
+  // Transmit power in dBm
+  int32 tx_power = 2;
+
+  // The selected frequency of LoRA operation
+  float frequency = 3;
+
+  // Optional short name of user
+  string short_name = 4;
+}
+
+// DeviceMetadata is defined in mesh.proto

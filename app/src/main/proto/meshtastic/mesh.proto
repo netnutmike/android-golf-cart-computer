@@ -1,0 +1,690 @@
+syntax = "proto3";
+
+package meshtastic;
+
+option java_package = "com.golfcart.gcd.data.proto";
+
+import "meshtastic/channel.proto";
+import "meshtastic/config.proto";
+import "meshtastic/module_config.proto";
+import "meshtastic/portnums.proto";
+import "meshtastic/telemetry.proto";
+
+/**
+ * Hardware model enum - identifies the type of hardware
+ */
+enum HardwareModel {
+  UNSET = 0;
+  TLORA_V2 = 1;
+  TLORA_V1 = 2;
+  TLORA_V2_1_1P6 = 3;
+  TBEAM = 4;
+  HELTEC_V2_0 = 5;
+  TBEAM_V0P7 = 6;
+  T_ECHO = 7;
+  TLORA_V1_1P3 = 8;
+  RAK4631 = 9;
+  HELTEC_V2_1 = 10;
+  HELTEC_V1 = 11;
+  LILYGO_TBEAM_S3_CORE = 12;
+  RAK11200 = 13;
+  NANO_G1 = 14;
+  STATION_G1 = 25;
+  HELTEC_V3 = 43;
+  RAK11310 = 26;
+  PORTDUINO = 37;
+  ANDROID_SIM = 38;
+  PRIVATE_HW = 255;
+}
+
+/**
+ * Shared constants between device and phone
+ */
+enum Constants {
+  // First enum must be zero
+  ZERO = 0;
+
+  // Maximum data payload length (excluding protobuf overhead)
+  DATA_PAYLOAD_LEN = 233;
+}
+
+/**
+ * A GPS Position
+ */
+message Position {
+  // The latitude in degrees * 1e-7
+  sfixed32 latitude_i = 1;
+
+  // The longitude in degrees * 1e-7
+  sfixed32 longitude_i = 2;
+
+  // In meters above MSL
+  int32 altitude = 3;
+
+  // Seconds since 1970
+  fixed32 time = 4;
+
+  // How the location was acquired
+  enum LocSource {
+    LOC_UNSET = 0;
+    LOC_MANUAL = 1;
+    LOC_INTERNAL = 2;
+    LOC_EXTERNAL = 3;
+  }
+
+  // Location source
+  LocSource location_source = 5;
+
+  // How the altitude was acquired
+  enum AltSource {
+    ALT_UNSET = 0;
+    ALT_MANUAL = 1;
+    ALT_INTERNAL = 2;
+    ALT_EXTERNAL = 3;
+    ALT_BAROMETRIC = 4;
+  }
+
+  // Altitude source
+  AltSource altitude_source = 6;
+
+  // Positional timestamp (actual timestamp of GPS solution) in integer epoch seconds
+  fixed32 timestamp = 7;
+
+  // Pos. timestamp milliseconds adjustment
+  int32 timestamp_millis_adjust = 8;
+
+  // HAE altitude in meters
+  sint32 altitude_hae = 9;
+
+  // Geoidal separation in meters
+  sint32 altitude_geoidal_separation = 10;
+
+  // Position Dilution of Precision (in 1/100 units)
+  uint32 PDOP = 11;
+
+  // Horizontal Dilution of Precision (in 1/100 units)
+  uint32 HDOP = 12;
+
+  // Vertical Dilution of Precision (in 1/100 units)
+  uint32 VDOP = 13;
+
+  // GPS accuracy in mm
+  uint32 gps_accuracy = 14;
+
+  // Ground speed in m/s
+  uint32 ground_speed = 15;
+
+  // True North TRACK in 1/100 degrees
+  uint32 ground_track = 16;
+
+  // GPS fix quality (from NMEA GxGGA statement)
+  uint32 fix_quality = 17;
+
+  // GPS fix type 2D/3D (from NMEA GxGSA statement)
+  uint32 fix_type = 18;
+
+  // GPS "Satellites in View" number
+  uint32 sats_in_view = 19;
+
+  // Sensor ID
+  uint32 sensor_id = 20;
+
+  // Estimated/expected time until next update (in seconds)
+  uint32 next_update = 21;
+
+  // A sequence number, incremented with each Position message
+  uint32 seq_number = 22;
+
+  // Indicates the bits of precision set by the sending node
+  uint32 precision_bits = 23;
+}
+
+/**
+ * A User - information about a node's owner
+ */
+message User {
+  // A globally unique ID string for this user (8 bytes as hex string)
+  string id = 1;
+
+  // A long name for this user
+  string long_name = 2;
+
+  // A short name for this user (up to 4 characters)
+  string short_name = 3;
+
+  // Deprecated: use macaddr instead
+  bytes macaddr = 4;
+
+  // The hardware model of this node
+  HardwareModel hw_model = 5;
+
+  // Whether this user is a licensed amateur radio operator
+  bool is_licensed = 6;
+
+  // Device role
+  Config.DeviceConfig.Role role = 7;
+
+  // Public key for PKC
+  bytes public_key = 8;
+}
+
+/**
+ * A Routing message - used for protocol control
+ */
+message Routing {
+  // A failure in delivering a message
+  enum Error {
+    // This message is not a failure
+    NONE = 0;
+    // No route to the requested destination
+    NO_ROUTE = 1;
+    // We received a nak while trying to forward
+    GOT_NAK = 2;
+    // Timeout
+    TIMEOUT = 3;
+    // No suitable interface
+    NO_INTERFACE = 4;
+    // Max retransmission count reached
+    MAX_RETRANSMIT = 5;
+    // No suitable channel
+    NO_CHANNEL = 6;
+    // Packet too big
+    TOO_LARGE = 7;
+    // No service wants to send a response
+    NO_RESPONSE = 8;
+    // Duty cycle limit
+    DUTY_CYCLE_LIMIT = 9;
+    // Bad request
+    BAD_REQUEST = 32;
+    // Not authorized
+    NOT_AUTHORIZED = 33;
+    // PKI failed
+    PKI_FAILED = 34;
+    // PKI unknown public key
+    PKI_UNKNOWN_PUBKEY = 35;
+  }
+
+  oneof variant {
+    // A route reply (route discovery)
+    RouteDiscovery route_request = 1;
+
+    // A route reply
+    RouteDiscovery route_reply = 2;
+
+    // A failure in delivering a message
+    Error error_reason = 3;
+  }
+}
+
+/**
+ * Route discovery message
+ */
+message RouteDiscovery {
+  // The list of node numbers in the route
+  repeated fixed32 route = 1;
+}
+
+/**
+ * The data payload within a MeshPacket
+ */
+message Data {
+  // Formerly named typ and target_node
+  PortNum portnum = 1;
+
+  // The actual payload bytes
+  bytes payload = 2;
+
+  // Not normally used - but if true, the message should be delivered as a reliable message
+  bool want_response = 3;
+
+  // The destination node for this message (if routing)
+  fixed32 dest = 4;
+
+  // The source node for this message (if routing)
+  fixed32 source = 5;
+
+  // Only used in routing or integers
+  fixed32 request_id = 6;
+
+  // If set, this message is a reply to a previous message with this ID
+  fixed32 reply_id = 7;
+
+  // Hop limit for this message
+  uint32 hop_limit = 8;
+
+  // Hop start for this message
+  uint32 hop_start = 9;
+
+  // Whether this is an emoji
+  bool emoji = 10;
+}
+
+/**
+ * A MeshPacket - the main packet type sent over the mesh
+ */
+message MeshPacket {
+  /**
+   * Priority of a MeshPacket for sending
+   */
+  enum Priority {
+    // Treated as DEFAULT
+    UNSET = 0;
+    // Minimum priority
+    MIN = 1;
+    // Background position updates
+    BACKGROUND = 10;
+    // Default priority for most messages
+    DEFAULT = 64;
+    // Important messages (want_ack)
+    RELIABLE = 70;
+    // Response to a request
+    RESPONSE = 80;
+    // Higher priority for specific message types
+    HIGH = 100;
+    // Critical alerts
+    ALERT = 110;
+    // Ack/naks
+    ACK = 120;
+    // Maximum priority
+    MAX = 127;
+  }
+
+  // The sending node number (set by the sender)
+  fixed32 from = 1;
+
+  // The destination node number (broadcast = 0xFFFFFFFF)
+  fixed32 to = 2;
+
+  // The channel index this packet was sent/received on
+  uint32 channel = 3;
+
+  oneof payload_variant {
+    // The decoded data payload
+    Data decoded = 4;
+
+    // The encrypted payload (when we can't decode)
+    bytes encrypted = 5;
+  }
+
+  // A unique ID for this packet (random, non-zero)
+  fixed32 id = 6;
+
+  // The time this message was received by the mesh (seconds since 1970)
+  fixed32 rx_time = 7;
+
+  // Signal-to-noise ratio of received packet
+  float rx_snr = 8;
+
+  // Hop limit for this packet
+  uint32 hop_limit = 9;
+
+  // Whether we want an ACK for this packet
+  bool want_ack = 10;
+
+  // Priority of this message for sending
+  Priority priority = 11;
+
+  // RSSI of received packet
+  int32 rx_rssi = 12;
+
+  // Identify if this is a delayed packet
+  enum Delayed {
+    // If unset, the message is being sent in real time
+    NO_DELAY = 0;
+    // The message is delayed and was originally a broadcast
+    DELAYED_BROADCAST = 1;
+    // The message is delayed and was originally a direct message
+    DELAYED_DIRECT = 2;
+  }
+
+  // Whether this packet is delayed
+  Delayed delayed = 13;
+
+  // Via MQTT flag
+  bool via_mqtt = 14;
+
+  // Hop start for this packet
+  uint32 hop_start = 15;
+
+  // Public key of the sender (for PKC)
+  bytes public_key = 16;
+
+  // Whether PKI was used for encryption
+  bool pki_encrypted = 17;
+}
+
+/**
+ * Information about a node in the mesh
+ */
+message NodeInfo {
+  // The node number
+  uint32 num = 1;
+
+  // The user info for this node
+  User user = 2;
+
+  // The position of this node
+  Position position = 3;
+
+  // Signal-to-noise ratio for last received message
+  float snr = 4;
+
+  // Last time we heard from this node (epoch seconds)
+  fixed32 last_heard = 5;
+
+  // Device metrics for this node
+  DeviceMetrics device_metrics = 6;
+
+  // Channel index this node was heard on
+  uint32 channel = 7;
+
+  // Whether this node can be reached via MQTT
+  bool via_mqtt = 8;
+
+  // Number of hops away (0 = direct neighbor, 255 = unknown)
+  uint32 hops_away = 9;
+
+  // Whether this node is a favorite
+  bool is_favorite = 10;
+}
+
+/**
+ * MyNodeInfo - information about the local node
+ */
+message MyNodeInfo {
+  // The node number assigned to this node
+  uint32 my_node_num = 1;
+
+  // Deprecated: use device_metadata instead
+  bool has_gps = 2;
+
+  // The maximum number of channels this device supports
+  uint32 max_channels = 3;
+
+  // Deprecated: firmware version
+  string firmware_version = 4;
+
+  // Error code if the device has encountered a critical error
+  CriticalErrorCode error_code = 5;
+
+  // Error address (for debugging)
+  uint32 error_address = 6;
+
+  // Error count
+  uint32 error_count = 7;
+
+  // How many bits are used for the packet ID
+  uint32 bitrate = 8;
+
+  // Deprecated: use device_metadata
+  uint32 message_timeout_msec = 9;
+
+  // Minimum app version
+  uint32 min_app_version = 10;
+
+  // Maximum number of channels
+  uint32 max_channels_real = 11;
+
+  // Air period TX in ms
+  uint32 air_period_tx = 12;
+
+  // Air period RX in ms
+  uint32 air_period_rx = 13;
+
+  // Whether the device has Ethernet
+  bool has_ethernet = 14;
+
+  // Whether the device has WiFi
+  bool has_wifi = 15;
+
+  // Whether the device has Bluetooth
+  bool has_bluetooth = 16;
+
+  // Device uptime in seconds
+  uint32 uptime_seconds = 17;
+}
+
+/**
+ * Critical error codes
+ */
+enum CriticalErrorCode {
+  CRITICAL_ERROR_NONE = 0;
+  TX_WATCHDOG = 1;
+  SLEEP_ENTER_WAIT = 2;
+  NO_RADIO = 3;
+  UNSPECIFIED = 4;
+  UBLOX_UNIT_FAILED = 5;
+  NO_AXP192 = 6;
+  INVALID_RADIO_SETTING = 7;
+  TRANSMIT_FAILED = 8;
+  BROWNOUT = 9;
+  SX1262_FAILURE = 10;
+  RADIO_SPI_BUG = 11;
+  FLASH_CORRUPTION_RECOVERABLE = 12;
+  FLASH_CORRUPTION_UNRECOVERABLE = 13;
+}
+
+/**
+ * Log record from the device
+ */
+message LogRecord {
+  // Log message
+  string message = 1;
+
+  // Seconds since 1970
+  fixed32 time = 2;
+
+  // Log source
+  string source = 3;
+
+  // Log level
+  enum Level {
+    LEVEL_UNSET = 0;
+    CRITICAL = 50;
+    ERROR = 40;
+    WARNING = 30;
+    INFO = 20;
+    DEBUG = 10;
+    TRACE = 5;
+  }
+
+  // The log level
+  Level level = 4;
+}
+
+/**
+ * Waypoint message
+ */
+message Waypoint {
+  // Unique ID for this waypoint
+  uint32 id = 1;
+
+  // Latitude in degrees * 1e-7
+  sfixed32 latitude_i = 2;
+
+  // Longitude in degrees * 1e-7
+  sfixed32 longitude_i = 3;
+
+  // Time the waypoint expires (epoch seconds, 0 = never)
+  uint32 expire = 4;
+
+  // If true, the waypoint is locked for editing
+  uint32 locked_to = 5;
+
+  // Name of the waypoint
+  string name = 6;
+
+  // Description of the waypoint
+  string description = 7;
+
+  // Icon for the waypoint (unicode emoji)
+  fixed32 icon = 8;
+}
+
+/**
+ * Compressed message (for TEXT_MESSAGE_COMPRESSED_APP)
+ */
+message Compressed {
+  // The portnum this was originally sent as
+  PortNum portnum = 1;
+
+  // The compressed data
+  bytes data = 2;
+}
+
+/**
+ * Device metadata response
+ */
+message DeviceMetadata {
+  // Device firmware version string
+  string firmware_version = 1;
+
+  // Device state version
+  uint32 device_state_version = 2;
+
+  // Whether the device can shutdown
+  bool can_shutdown = 3;
+
+  // Whether the device has WiFi
+  bool has_wifi = 4;
+
+  // Whether the device has Bluetooth
+  bool has_bluetooth = 5;
+
+  // Whether the device has Ethernet
+  bool has_ethernet = 6;
+
+  // Device role
+  Config.DeviceConfig.Role role = 7;
+
+  // Position flags
+  uint32 position_flags = 8;
+
+  // Hardware model
+  HardwareModel hw_model = 9;
+
+  // Whether the device has remote hardware
+  bool has_remote_hardware = 10;
+}
+
+/**
+ * FromRadio - wrapper for all messages from the radio to the phone/client.
+ * This is the main message type received from the Meshtastic device.
+ */
+message FromRadio {
+  // The packet id (used for ack/nak)
+  uint32 id = 1;
+
+  oneof payload_variant {
+    // Sent as the initial response to a want_config request
+    MyNodeInfo my_info = 3;
+
+    // Sent as part of config response
+    NodeInfo node_info = 4;
+
+    // Sent as part of config response
+    Config config = 5;
+
+    // Sent as part of config response
+    LogRecord log_record = 6;
+
+    // Sent after all config has been sent
+    uint32 config_complete_id = 7;
+
+    // A packet received from the mesh
+    MeshPacket packet = 8;
+
+    // Sent to indicate the radio is ready to receive commands
+    bool rebooted = 9;
+
+    // Module config sent during config download
+    ModuleConfig moduleConfig = 10;
+
+    // Channel sent during config download
+    Channel channel = 11;
+
+    // Queue status
+    QueueStatus queueStatus = 12;
+
+    // XModem control
+    XModem xmodemPacket = 13;
+
+    // Device metadata
+    DeviceMetadata metadata = 14;
+  }
+}
+
+/**
+ * ToRadio - wrapper for all messages from the phone/client to the radio.
+ * This is the main message type sent to the Meshtastic device.
+ */
+message ToRadio {
+  oneof payload_variant {
+    // Send a MeshPacket to the radio
+    MeshPacket packet = 1;
+
+    // Phone wants radio to send the full node db on the mesh
+    // The value is a random config_id that will be echoed in config_complete_id
+    uint32 want_config_id = 3;
+
+    // Tell the radio to disconnect (for BLE, before closing connection)
+    bool disconnect = 4;
+
+    // XModem control
+    XModem xmodemPacket = 5;
+
+    // Heartbeat message (keep-alive)
+    Heartbeat heartbeat = 6;
+  }
+}
+
+/**
+ * Queue status message
+ */
+message QueueStatus {
+  // Last operation was successful
+  int32 res = 1;
+
+  // Number of free slots in the TX queue
+  uint32 free = 2;
+
+  // Maximum number of slots in the TX queue
+  uint32 maxlen = 3;
+
+  // Mesh packet ID of the last queued packet
+  uint32 mesh_packet_id = 4;
+}
+
+/**
+ * XModem control message (for firmware updates)
+ */
+message XModem {
+  enum Control {
+    NUL = 0;
+    SOH = 1;
+    STX = 2;
+    EOT = 4;
+    ACK = 6;
+    NAK = 21;
+    CAN = 24;
+    CTRLZ = 26;
+  }
+
+  // XModem control byte
+  Control control = 1;
+
+  // Sequence number
+  uint32 seq = 2;
+
+  // CRC16
+  uint32 crc16 = 3;
+
+  // Data buffer
+  bytes buffer = 4;
+}
+
+/**
+ * Heartbeat message (keep-alive for BLE connections)
+ */
+message Heartbeat {
+}

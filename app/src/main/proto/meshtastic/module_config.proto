@@ -1,0 +1,403 @@
+syntax = "proto3";
+
+package meshtastic;
+
+option java_package = "com.golfcart.gcd.data.proto";
+
+/**
+ * Module configuration message.
+ * Contains all module-specific configuration sub-messages.
+ */
+message ModuleConfig {
+  /**
+   * MQTT module configuration
+   */
+  message MQTTConfig {
+    // Whether MQTT is enabled
+    bool enabled = 1;
+
+    // MQTT server address
+    string address = 2;
+
+    // MQTT username
+    string username = 3;
+
+    // MQTT password
+    string password = 4;
+
+    // Whether encryption is enabled
+    bool encryption_enabled = 5;
+
+    // Whether JSON output is enabled
+    bool json_enabled = 6;
+
+    // Whether TLS is enabled
+    bool tls_enabled = 7;
+
+    // Root topic
+    string root = 8;
+
+    // Whether proxy to client is enabled
+    bool proxy_to_client_enabled = 9;
+
+    // Whether map reporting is enabled
+    bool map_reporting_enabled = 10;
+  }
+
+  /**
+   * Serial module configuration
+   */
+  message SerialConfig {
+    // Whether serial module is enabled
+    bool enabled = 1;
+
+    // Whether echo is enabled
+    bool echo = 2;
+
+    // RX pin
+    uint32 rxd = 3;
+
+    // TX pin
+    uint32 txd = 4;
+
+    // Baud rate
+    enum Serial_Baud {
+      BAUD_DEFAULT = 0;
+      BAUD_110 = 1;
+      BAUD_300 = 2;
+      BAUD_600 = 3;
+      BAUD_1200 = 4;
+      BAUD_2400 = 5;
+      BAUD_4800 = 6;
+      BAUD_9600 = 7;
+      BAUD_19200 = 8;
+      BAUD_38400 = 9;
+      BAUD_57600 = 10;
+      BAUD_115200 = 11;
+      BAUD_230400 = 12;
+      BAUD_460800 = 13;
+      BAUD_576000 = 14;
+      BAUD_921600 = 15;
+    }
+
+    Serial_Baud baud = 5;
+
+    // Timeout in seconds
+    uint32 timeout = 6;
+
+    // Serial mode
+    enum Serial_Mode {
+      DEFAULT = 0;
+      SIMPLE = 1;
+      PROTO = 2;
+      TEXTMSG = 3;
+      NMEA = 4;
+      CALTOPO = 5;
+    }
+
+    Serial_Mode mode = 7;
+
+    // Override console serial port
+    bool override_console_serial_port = 8;
+  }
+
+  /**
+   * External notification module configuration
+   */
+  message ExternalNotificationConfig {
+    // Whether external notification is enabled
+    bool enabled = 1;
+
+    // Output milliseconds
+    uint32 output_ms = 2;
+
+    // Output pin
+    uint32 output = 3;
+
+    // Active state (high or low)
+    bool active = 4;
+
+    // Alert message enabled
+    bool alert_message = 5;
+
+    // Alert message buzzer
+    bool alert_message_buzzer = 6;
+
+    // Alert message vibra
+    bool alert_message_vibra = 7;
+
+    // Alert bell enabled
+    bool alert_bell = 8;
+
+    // Alert bell buzzer
+    bool alert_bell_buzzer = 9;
+
+    // Alert bell vibra
+    bool alert_bell_vibra = 10;
+
+    // Use PWM for buzzer
+    bool use_pwm = 11;
+
+    // Nag timeout in seconds
+    uint32 nag_timeout = 12;
+
+    // Use I2S as buzzer
+    bool use_i2s_as_buzzer = 13;
+  }
+
+  /**
+   * Store and Forward module configuration
+   */
+  message StoreForwardConfig {
+    // Whether store and forward is enabled
+    bool enabled = 1;
+
+    // Whether heartbeat is enabled
+    bool heartbeat = 2;
+
+    // Number of records to store
+    uint32 records = 3;
+
+    // History return max
+    uint32 history_return_max = 4;
+
+    // History return window in seconds
+    uint32 history_return_window = 5;
+  }
+
+  /**
+   * Range test module configuration
+   */
+  message RangeTestConfig {
+    // Whether range test is enabled
+    bool enabled = 1;
+
+    // Sender interval in seconds
+    uint32 sender = 2;
+
+    // Whether to save to file
+    bool save = 3;
+  }
+
+  /**
+   * Telemetry module configuration
+   */
+  message TelemetryConfig {
+    // Device metrics update interval in seconds
+    uint32 device_update_interval = 1;
+
+    // Environment metrics update interval in seconds
+    uint32 environment_update_interval = 2;
+
+    // Whether environment measurement is enabled
+    bool environment_measurement_enabled = 3;
+
+    // Whether environment screen is enabled
+    bool environment_screen_enabled = 4;
+
+    // Whether environment display on Fahrenheit
+    bool environment_display_fahrenheit = 5;
+
+    // Air quality interval in seconds
+    uint32 air_quality_interval = 6;
+
+    // Whether air quality is enabled
+    bool air_quality_enabled = 7;
+
+    // Power metrics update interval in seconds
+    uint32 power_update_interval = 8;
+
+    // Whether power measurement is enabled
+    bool power_measurement_enabled = 9;
+
+    // Whether power screen is enabled
+    bool power_screen_enabled = 10;
+  }
+
+  /**
+   * Canned message module configuration
+   */
+  message CannedMessageConfig {
+    // Whether rotary encoder is enabled
+    bool rotary1_enabled = 1;
+
+    // Rotary encoder pin A
+    uint32 inputbroker_pin_a = 2;
+
+    // Rotary encoder pin B
+    uint32 inputbroker_pin_b = 3;
+
+    // Rotary encoder press pin
+    uint32 inputbroker_pin_press = 4;
+
+    // Input event character for CW
+    enum InputEventChar {
+      NONE = 0;
+      UP = 17;
+      DOWN = 18;
+      LEFT = 19;
+      RIGHT = 20;
+      SELECT = 10;
+      BACK = 27;
+      CANCEL = 24;
+    }
+
+    InputEventChar inputbroker_event_cw = 5;
+
+    // Input event character for CCW
+    InputEventChar inputbroker_event_ccw = 6;
+
+    // Input event character for press
+    InputEventChar inputbroker_event_press = 7;
+
+    // Whether uplink is enabled
+    bool uplink_enabled = 8;
+
+    // Whether the module is enabled
+    bool enabled = 9;
+
+    // Allow input source
+    string allow_input_source = 10;
+
+    // Whether to send bell
+    bool send_bell = 11;
+  }
+
+  /**
+   * Audio module configuration
+   */
+  message AudioConfig {
+    // Baudrate for codec2 voice
+    enum Audio_Baud {
+      CODEC2_DEFAULT = 0;
+      CODEC2_3200 = 1;
+      CODEC2_2400 = 2;
+      CODEC2_1600 = 3;
+      CODEC2_1400 = 4;
+      CODEC2_1300 = 5;
+      CODEC2_1200 = 6;
+      CODEC2_700 = 7;
+      CODEC2_700B = 8;
+    }
+
+    // Whether codec2 is enabled
+    bool codec2_enabled = 1;
+
+    // PTT pin
+    uint32 ptt_pin = 2;
+
+    // Audio bitrate
+    Audio_Baud bitrate = 3;
+
+    // I2S word select pin
+    uint32 i2s_ws = 4;
+
+    // I2S data in pin
+    uint32 i2s_sd = 5;
+
+    // I2S data out pin
+    uint32 i2s_din = 6;
+
+    // I2S clock pin
+    uint32 i2s_sck = 7;
+  }
+
+  /**
+   * Remote hardware module configuration
+   */
+  message RemoteHardwareConfig {
+    // Whether remote hardware is enabled
+    bool enabled = 1;
+
+    // Whether to allow undefined pin access
+    bool allow_undefined_pin_access = 2;
+  }
+
+  /**
+   * Neighbor info module configuration
+   */
+  message NeighborInfoConfig {
+    // Whether neighbor info is enabled
+    bool enabled = 1;
+
+    // Update interval in seconds
+    uint32 update_interval = 2;
+  }
+
+  /**
+   * Ambient lighting module configuration
+   */
+  message AmbientLightingConfig {
+    // Whether LED state is enabled
+    bool led_state = 1;
+
+    // Current value (brightness 0-255)
+    uint32 current = 2;
+
+    // Red value (0-255)
+    uint32 red = 3;
+
+    // Green value (0-255)
+    uint32 green = 4;
+
+    // Blue value (0-255)
+    uint32 blue = 5;
+  }
+
+  /**
+   * Detection sensor module configuration
+   */
+  message DetectionSensorConfig {
+    // Whether detection sensor is enabled
+    bool enabled = 1;
+
+    // Minimum broadcast interval in seconds
+    uint32 minimum_broadcast_secs = 2;
+
+    // State broadcast interval in seconds
+    uint32 state_broadcast_secs = 3;
+
+    // Whether to send bell
+    bool send_bell = 4;
+
+    // Name of the sensor
+    string name = 5;
+
+    // Monitor pin
+    uint32 monitor_pin = 6;
+
+    // Detection triggered high
+    bool detection_triggered_high = 7;
+
+    // Use pull-up resistor
+    bool use_pullup = 8;
+  }
+
+  /**
+   * Paxcounter module configuration
+   */
+  message PaxcounterConfig {
+    // Whether paxcounter is enabled
+    bool enabled = 1;
+
+    // Update interval in seconds
+    uint32 paxcounter_update_interval = 2;
+  }
+
+  // The specific module config payload
+  oneof payload_variant {
+    MQTTConfig mqtt = 1;
+    SerialConfig serial = 2;
+    ExternalNotificationConfig external_notification = 3;
+    StoreForwardConfig store_forward = 4;
+    RangeTestConfig range_test = 5;
+    TelemetryConfig telemetry = 6;
+    CannedMessageConfig canned_message = 7;
+    AudioConfig audio = 8;
+    RemoteHardwareConfig remote_hardware = 9;
+    NeighborInfoConfig neighbor_info = 10;
+    AmbientLightingConfig ambient_lighting = 11;
+    DetectionSensorConfig detection_sensor = 12;
+    PaxcounterConfig paxcounter = 13;
+  }
+}

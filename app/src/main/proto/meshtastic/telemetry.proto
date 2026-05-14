@@ -1,0 +1,134 @@
+syntax = "proto3";
+
+package meshtastic;
+
+option java_package = "com.golfcart.gcd.data.proto";
+
+/**
+ * Key native device metrics such as battery level
+ */
+message DeviceMetrics {
+  // 0-100 (>100 means powered)
+  uint32 battery_level = 1;
+
+  // Voltage measured
+  float voltage = 2;
+
+  // Utilization for the current channel, including all transmission and reception
+  float channel_utilization = 3;
+
+  // Percent of airtime used for transmission
+  float air_util_tx = 4;
+
+  // How long the device has been running since the last reboot (in seconds)
+  uint32 uptime_seconds = 5;
+}
+
+/**
+ * Weather/environment metrics
+ */
+message EnvironmentMetrics {
+  // Temperature in Celsius
+  float temperature = 1;
+
+  // Relative humidity percent
+  float relative_humidity = 2;
+
+  // Barometric pressure in hPa
+  float barometric_pressure = 3;
+
+  // Gas resistance in MOhms
+  float gas_resistance = 4;
+
+  // Voltage (user-defined measurement)
+  float voltage = 5;
+
+  // Current (user-defined measurement)
+  float current = 6;
+
+  // IAQ value (0-500)
+  uint32 iaq = 7;
+
+  // Wind direction in degrees (0-360)
+  uint32 wind_direction = 8;
+
+  // Wind speed in m/s
+  float wind_speed = 9;
+
+  // Weight in kg
+  float weight = 10;
+
+  // Wind gust in m/s
+  float wind_gust = 11;
+
+  // Wind lull in m/s
+  float wind_lull = 12;
+}
+
+/**
+ * Power metrics for monitoring power sources
+ */
+message PowerMetrics {
+  // Voltage of channel 1 (mV)
+  float ch1_voltage = 1;
+
+  // Current of channel 1 (mA)
+  float ch1_current = 2;
+
+  // Voltage of channel 2 (mV)
+  float ch2_voltage = 3;
+
+  // Current of channel 2 (mA)
+  float ch2_current = 4;
+
+  // Voltage of channel 3 (mV)
+  float ch3_voltage = 5;
+
+  // Current of channel 3 (mA)
+  float ch3_current = 6;
+}
+
+/**
+ * Air quality metrics
+ */
+message AirQualityMetrics {
+  // Concentration Units Standard PM1.0
+  uint32 pm10_standard = 1;
+
+  // Concentration Units Standard PM2.5
+  uint32 pm25_standard = 2;
+
+  // Concentration Units Standard PM10.0
+  uint32 pm100_standard = 3;
+
+  // Concentration Units Environmental PM1.0
+  uint32 pm10_environmental = 4;
+
+  // Concentration Units Environmental PM2.5
+  uint32 pm25_environmental = 5;
+
+  // Concentration Units Environmental PM10.0
+  uint32 pm100_environmental = 6;
+}
+
+/**
+ * Telemetry message - the main telemetry container
+ */
+message Telemetry {
+  // Seconds since 1970 - or 0 for unknown/unset
+  fixed32 time = 1;
+
+  oneof variant {
+    // Device metrics (battery, uptime, etc.)
+    DeviceMetrics device_metrics = 2;
+
+    // Environment metrics (temperature, humidity, pressure)
+    EnvironmentMetrics environment_metrics = 3;
+
+    // Air quality metrics
+    AirQualityMetrics air_quality_metrics = 4;
+
+    // Power metrics
+    PowerMetrics power_metrics = 5;
+  }
+}

@@ -1,0 +1,418 @@
+syntax = "proto3";
+
+package meshtastic;
+
+option java_package = "com.golfcart.gcd.data.proto";
+
+/**
+ * Configuration message for the Meshtastic device.
+ * Contains all device configuration sub-messages.
+ */
+message Config {
+  /**
+   * Device configuration
+   */
+  message DeviceConfig {
+    // Defines the device's role on the Mesh network
+    enum Role {
+      // App connected or stand alone messaging device (default)
+      CLIENT = 0;
+      // Device that does not forward packets from other devices
+      CLIENT_MUTE = 1;
+      // Infrastructure node for extending network coverage
+      ROUTER = 2;
+      // Router with client capabilities
+      ROUTER_CLIENT = 3;
+      // Simply rebroadcasts any mesh packets
+      REPEATER = 4;
+      // Broadcasts GPS position packets as priority
+      TRACKER = 5;
+      // Broadcasts telemetry packets as priority
+      SENSOR = 6;
+      // Optimized for ATAK system communication
+      TAK = 7;
+      // Device that only broadcasts as needed for stealth or power savings
+      CLIENT_HIDDEN = 8;
+      // Broadcasts location as message for device recovery
+      LOST_AND_FOUND = 9;
+      // Enables automatic TAK PLI broadcasts
+      TAK_TRACKER = 10;
+    }
+
+    // Defines the device's behavior for how messages are rebroadcast
+    enum RebroadcastMode {
+      // Default behavior - rebroadcast any observed message
+      ALL = 0;
+      // Same as ALL but skips packet decoding
+      ALL_SKIP_DECODING = 1;
+      // Only rebroadcasts on local primary/secondary channels
+      LOCAL_ONLY = 2;
+      // Also ignores messages from unknown nodenums
+      KNOWN_ONLY = 3;
+      // Inhibit all rebroadcasts (only for SENSOR, TRACKER, TAK_TRACKER)
+      NONE = 4;
+    }
+
+    // The role of this device in the mesh network
+    Role role = 1;
+
+    // Whether serial console is enabled
+    bool serial_enabled = 2;
+
+    // Interval in seconds for NodeInfo broadcasts (default 900)
+    uint32 node_info_broadcast_secs = 3;
+
+    // Whether double-tap button press is enabled
+    bool double_tap_as_button_press = 4;
+
+    // Whether the device is a managed device
+    bool is_managed = 5;
+
+    // Whether the node is disabled over the mesh
+    bool node_info_broadcast_enabled = 6;
+
+    // Rebroadcast mode
+    RebroadcastMode rebroadcast_mode = 7;
+  }
+
+  /**
+   * Position configuration
+   */
+  message PositionConfig {
+    // Bit field of boolean configuration options for position messages
+    enum PositionFlags {
+      // Required for compilation
+      UNSET = 0;
+      // Include an altitude value (if available)
+      ALTITUDE = 1;
+      // Altitude value is MSL
+      ALTITUDE_MSL = 2;
+      // Include geoidal separation
+      GEOIDAL_SEPARATION = 4;
+      // Include the DOP value
+      DOP = 8;
+      // If DOP set, send separate HDOP/VDOP values instead of PDOP
+      HVDOP = 16;
+      // Include number of satellites in view
+      SATINVIEW = 32;
+      // Include a sequence number incremented per packet
+      SEQ_NO = 64;
+      // Include positional timestamp (from GPS solution)
+      TIMESTAMP = 128;
+      // Include positional heading
+      HEADING = 256;
+      // Include positional speed
+      SPEED = 512;
+    }
+
+    // GPS mode
+    enum GpsMode {
+      // GPS is present but disabled
+      DISABLED = 0;
+      // GPS is present and enabled
+      ENABLED = 1;
+      // GPS is not present on the device
+      NOT_PRESENT = 2;
+    }
+
+    // How often we should try to get GPS position (in seconds)
+    uint32 position_broadcast_secs = 1;
+
+    // Adaptive position broadcast (smart position)
+    bool position_broadcast_smart_enabled = 2;
+
+    // How often should we try to get GPS position (in seconds) when we are in fixed position mode
+    uint32 fixed_position = 3;
+
+    // GPS is enabled
+    GpsMode gps_mode = 4;
+
+    // GPS update interval in seconds
+    uint32 gps_update_interval = 5;
+
+    // Deprecated: use gps_mode instead
+    uint32 gps_attempt_time = 6;
+
+    // Bit field of boolean configuration options for POSITION messages
+    uint32 position_flags = 7;
+
+    // (Re)define GPS_RX_PIN for the GPS module
+    uint32 rx_gpio = 8;
+
+    // (Re)define GPS_TX_PIN for the GPS module
+    uint32 tx_gpio = 9;
+
+    // The minimum distance in meters traveled before a position broadcast
+    uint32 broadcast_smart_minimum_distance = 10;
+
+    // The minimum number of seconds before a position broadcast
+    uint32 broadcast_smart_minimum_interval_secs = 11;
+
+    // GPS enable pin (for power control)
+    uint32 gps_en_gpio = 12;
+  }
+
+  /**
+   * Power configuration
+   */
+  message PowerConfig {
+    // Whether power saving mode is enabled
+    bool is_power_saving = 1;
+
+    // Shutdown on loss of power after this many seconds (0 disables)
+    uint32 on_battery_shutdown_after_secs = 2;
+
+    // Ratio of sleep time to wake time
+    float adc_multiplier_override = 3;
+
+    // Wait for Bluetooth duration in seconds
+    uint32 wait_bluetooth_secs = 4;
+
+    // Super deep sleep duration in seconds
+    uint32 sds_secs = 5;
+
+    // Light sleep duration in seconds
+    uint32 ls_secs = 6;
+
+    // Minimum wake time in seconds
+    uint32 min_wake_secs = 7;
+
+    // Device battery INA2xx address
+    uint32 device_battery_ina_address = 8;
+  }
+
+  /**
+   * Network configuration
+   */
+  message NetworkConfig {
+    // WiFi enabled
+    bool wifi_enabled = 1;
+
+    // WiFi SSID
+    string wifi_ssid = 2;
+
+    // WiFi PSK
+    string wifi_psk = 3;
+
+    // NTP server
+    string ntp_server = 4;
+
+    // Enable Ethernet
+    bool eth_enabled = 5;
+
+    // Address mode (DHCP or static)
+    enum AddressMode {
+      DHCP = 0;
+      STATIC = 1;
+    }
+
+    AddressMode address_mode = 6;
+  }
+
+  /**
+   * Display configuration
+   */
+  message DisplayConfig {
+    // Screen on duration in seconds
+    uint32 screen_on_secs = 1;
+
+    // GPS coordinate format
+    enum GpsCoordinateFormat {
+      DEC = 0;
+      DMS = 1;
+      UTM = 2;
+      MGRS = 3;
+      OLC = 4;
+      OSGR = 5;
+    }
+
+    GpsCoordinateFormat gps_format = 2;
+
+    // Auto screen carousel interval in seconds
+    uint32 auto_screen_carousel_secs = 3;
+
+    // Compass north top
+    bool compass_north_top = 4;
+
+    // Flip screen
+    bool flip_screen = 5;
+
+    // Display units
+    enum DisplayUnits {
+      METRIC = 0;
+      IMPERIAL = 1;
+    }
+
+    DisplayUnits units = 6;
+
+    // OLED type
+    enum OledType {
+      OLED_AUTO = 0;
+      OLED_SSD1306 = 1;
+      OLED_SH1106 = 2;
+      OLED_SH1107 = 3;
+    }
+
+    OledType oled = 7;
+
+    // Display mode
+    enum DisplayMode {
+      DEFAULT = 0;
+      TWOCOLOR = 1;
+      INVERTED = 2;
+      COLOR = 3;
+    }
+
+    DisplayMode displaymode = 8;
+
+    // Heading bold
+    bool heading_bold = 9;
+
+    // Wake on tap or motion
+    bool wake_on_tap_or_motion = 10;
+  }
+
+  /**
+   * LoRa configuration
+   */
+  message LoRaConfig {
+    // Modem preset
+    enum ModemPreset {
+      LONG_FAST = 0;
+      LONG_SLOW = 1;
+      VERY_LONG_SLOW = 2;
+      MEDIUM_SLOW = 3;
+      MEDIUM_FAST = 4;
+      SHORT_SLOW = 5;
+      SHORT_FAST = 6;
+      LONG_MODERATE = 7;
+      SHORT_TURBO = 8;
+    }
+
+    // Region code
+    enum RegionCode {
+      UNSET = 0;
+      US = 1;
+      EU_433 = 2;
+      EU_868 = 3;
+      CN = 4;
+      JP = 5;
+      ANZ = 6;
+      KR = 7;
+      TW = 8;
+      RU = 9;
+      IN = 10;
+      NZ_865 = 11;
+      TH = 12;
+      LORA_24 = 13;
+      UA_433 = 14;
+      UA_868 = 15;
+      MY_433 = 16;
+      MY_919 = 17;
+      SG_923 = 18;
+    }
+
+    // Use preset
+    bool use_preset = 1;
+
+    // Modem preset to use
+    ModemPreset modem_preset = 2;
+
+    // Bandwidth in MHz
+    uint32 bandwidth = 3;
+
+    // Spreading factor (7-12)
+    uint32 spread_factor = 4;
+
+    // Coding rate (5-8)
+    uint32 coding_rate = 5;
+
+    // Frequency offset in Hz
+    float frequency_offset = 6;
+
+    // Region
+    RegionCode region = 7;
+
+    // Hop limit (1-7)
+    uint32 hop_limit = 8;
+
+    // Transmit power in dBm
+    int32 tx_power = 9;
+
+    // Whether TX is enabled
+    bool tx_enabled = 10;
+
+    // Channel number (0-based)
+    uint32 channel_num = 11;
+
+    // Override duty cycle
+    bool override_duty_cycle = 12;
+
+    // Override frequency
+    float override_frequency = 13;
+
+    // Ignore incoming messages from nodes not in the NodeDB
+    bool ignore_incoming = 14;
+
+    // Ignore MQTT messages
+    bool ignore_mqtt = 15;
+  }
+
+  /**
+   * Bluetooth configuration
+   */
+  message BluetoothConfig {
+    // Whether Bluetooth is enabled
+    bool enabled = 1;
+
+    // Bluetooth pairing mode
+    enum PairingMode {
+      RANDOM_PIN = 0;
+      FIXED_PIN = 1;
+      NO_PIN = 2;
+    }
+
+    PairingMode mode = 2;
+
+    // Fixed PIN for pairing
+    uint32 fixed_pin = 3;
+  }
+
+  /**
+   * Security configuration
+   */
+  message SecurityConfig {
+    // Public key for PKC
+    bytes public_key = 1;
+
+    // Private key for PKC
+    bytes private_key = 2;
+
+    // Admin key (public key of admin)
+    repeated bytes admin_key = 3;
+
+    // Whether managed mode is enabled
+    bool is_managed = 4;
+
+    // Whether serial console is enabled
+    bool serial_enabled = 5;
+
+    // Whether debug log API is enabled
+    bool debug_log_api_enabled = 6;
+
+    // Admin channel enabled
+    bool admin_channel_enabled = 8;
+  }
+
+  // The specific config payload
+  oneof payload_variant {
+    DeviceConfig device = 1;
+    PositionConfig position = 2;
+    PowerConfig power = 3;
+    NetworkConfig network = 4;
+    DisplayConfig display = 5;
+    LoRaConfig lora = 6;
+    BluetoothConfig bluetooth = 7;
+    SecurityConfig security = 8;
+  }
+}
