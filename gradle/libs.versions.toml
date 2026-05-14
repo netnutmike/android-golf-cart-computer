@@ -31,7 +31,7 @@ wire = "4.9.9"
 datastore = "1.0.0"
 
 # Coroutines
-coroutines = "1.8.0"
+coroutines = "1.11.0"
 
 # Testing
 junit5 = "5.10.2"
