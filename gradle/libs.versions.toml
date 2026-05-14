@@ -38,7 +38,7 @@ junit5 = "5.10.2"
 jqwik = "1.8.3"
 mockk = "1.13.9"
 turbine = "1.0.0"
-robolectric = "4.11.1"
+robolectric = "4.16.1"
 
 # AndroidX
 coreKtx = "1.12.0"
