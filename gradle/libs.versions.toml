@@ -35,7 +35,7 @@ coroutines = "1.8.0"
 
 # Testing
 junit5 = "5.10.2"
-jqwik = "1.8.3"
+jqwik = "1.9.3"
 mockk = "1.13.9"
 turbine = "1.0.0"
 robolectric = "4.11.1"
