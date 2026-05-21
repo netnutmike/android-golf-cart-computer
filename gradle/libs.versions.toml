@@ -6,7 +6,7 @@ targetSdk = "34"
 
 # Core
 agp = "8.2.2"
-kotlin = "1.9.22"
+kotlin = "2.3.21"
 ksp = "1.9.22-1.0.17"
 java = "17"
 
