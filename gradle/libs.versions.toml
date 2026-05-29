@@ -18,7 +18,7 @@ lifecycleRuntime = "2.7.0"
 navigationCompose = "2.7.7"
 
 # Dependency Injection
-hilt = "2.50"
+hilt = "2.59.2"
 hiltNavigationCompose = "1.1.0"
 
 # Bluetooth
